@@ -1,12 +1,14 @@
 package com.example.googledrive
 
 import android.app.PendingIntent
+import android.content.Intent
 import android.content.IntentSender.SendIntentException
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
@@ -23,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.auth.api.identity.AuthorizationResult
 import com.google.android.gms.auth.api.identity.Identity
 import com.google.api.services.drive.Drive
-import com.google.api.services.drive.model.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File as LocalFile
@@ -40,16 +41,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var syncToDriveButton: Button
     private lateinit var syncFromDriveButton: Button
     private lateinit var selectFileButton: Button
+    private lateinit var viewLogButton: Button
     private lateinit var statusTextView: TextView
     private lateinit var userInfoTextView: TextView
     private lateinit var fileListRecyclerView: RecyclerView
     private lateinit var fileAdapter: FileAdapter
     private lateinit var loadingProgressBar: ProgressBar
     private lateinit var loadingTextView: TextView
+    private lateinit var loadingLayout: LinearLayout
 
     // Data
     private val localFiles = MutableLiveData<List<LocalFileInfo>>(emptyList())
-    private val driveFiles = mutableListOf<File>()
     private var uri: Uri? = null
     private lateinit var uploadDir: LocalFile
 
@@ -154,11 +156,13 @@ class MainActivity : AppCompatActivity() {
         syncToDriveButton = findViewById(R.id.syncToDriveButton)
         syncFromDriveButton = findViewById(R.id.syncFromDriveButton)
         selectFileButton = findViewById(R.id.selectFileButton)
+        viewLogButton = findViewById(R.id.viewLogButton)
         statusTextView = findViewById(R.id.statusTextView)
         userInfoTextView = findViewById(R.id.userInfoTextView)
         fileListRecyclerView = findViewById(R.id.fileListRecyclerView)
         loadingProgressBar = findViewById(R.id.loadingProgressBar)
         loadingTextView = findViewById(R.id.loadingTextView)
+        loadingLayout = findViewById(R.id.loadingOverlay)
     }
 
     /**
@@ -209,6 +213,10 @@ class MainActivity : AppCompatActivity() {
                 signOut()
             }
         }
+
+        viewLogButton.setOnClickListener {
+            startActivity(Intent(this, LogActivity::class.java))
+        }
     }
 
     /**
@@ -217,8 +225,7 @@ class MainActivity : AppCompatActivity() {
     private fun showLoading(message: String = "Syncing...") {
         runOnUiThread {
             loadingTextView.text = message
-            loadingProgressBar.visibility = View.VISIBLE
-            loadingTextView.visibility = View.VISIBLE
+            loadingLayout.visibility = View.VISIBLE
             syncToDriveButton.isEnabled = false
             syncFromDriveButton.isEnabled = false
             selectFileButton.isEnabled = false
@@ -230,8 +237,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun hideLoading() {
         runOnUiThread {
-            loadingProgressBar.visibility = View.GONE
-            loadingTextView.visibility = View.GONE
+            loadingLayout.visibility = View.GONE
             syncToDriveButton.isEnabled = true
             syncFromDriveButton.isEnabled = true
             selectFileButton.isEnabled = true
@@ -574,6 +580,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "MainActivity"
         private const val UPLOAD_DIR_NAME = "uploaded_files"
-        private const val WEB_CLIENT_ID = ""
+        private const val WEB_CLIENT_ID =
+            "138324410819-nrpe25634p9l8q6cn725e8apbvg9p8jq.apps.googleusercontent.com"
     }
 }
